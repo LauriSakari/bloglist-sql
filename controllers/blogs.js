@@ -5,6 +5,11 @@ const { SECRET } = require('../util/config')
 const { Blog } = require('../models')
 const { User } = require('../models')
 
+const { Op } = require('sequelize')
+const { sequelize } = require('../models/blog')
+
+//Helper functions
+
 const getTokenFrom = req => {
   const authorization = req.get('authorization')
   if (authorization && authorization.startsWith('Bearer ')) {
@@ -22,11 +27,27 @@ const verifyToken = (req) => {
   return decodedToken
 }
 
+//Routes
+
 router.get('/', async (req, res) => {
+  let where = {}
+
+   if (req.query.search) {
+    const queryLowercased = req.query.search.toLowerCase()
+
+    where = { [Op.or]: [
+      sequelize.where(sequelize.fn('lower', sequelize.col('title')), {[Op.like]: `%${queryLowercased}%`}),
+      sequelize.where(sequelize.fn('lower', sequelize.col('author')), {[Op.like]: `%${queryLowercased}%`})
+      ]}
+    }
     const blogs = await Blog.findAll({
       include: {
         model: User
-      }
+      },
+      order: [
+        ['likes', 'DESC']
+      ],
+      where
     })
     res.json(blogs)
   })
