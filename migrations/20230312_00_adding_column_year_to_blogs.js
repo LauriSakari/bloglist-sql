@@ -6,7 +6,7 @@ module.exports = {
       type: DataTypes.INTEGER,
       validate: {
         min: 1991,
-        max: 2023 
+        max: 2023
       }
     })
   },

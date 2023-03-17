@@ -7,8 +7,8 @@ const { Op } = require('sequelize')
 router.get('/', async (req, res) => {
   const users = await User.findAll({
     include: {
-        model: Blog
-      }
+      model: Blog
+    }
   })
   res.json(users)
 })
@@ -18,7 +18,7 @@ router.get('/:id', async (req, res) => {
     [Op.in]: [true, false]
   }
   if ( req.query.read ) {
-    read = req.query.read === "true"
+    read = req.query.read === 'true'
   }
   const users = await User.findByPk(req.params.id, {
     attributes: ['username', 'name'],
@@ -26,40 +26,34 @@ router.get('/:id', async (req, res) => {
       {
         model: Blog,
         as: 'readings',
-        attributes: { exclude: ['userId', 'createdAt', 'updatedAt']},
+        attributes: { exclude: ['userId', 'createdAt', 'updatedAt'] },
         through: {
           attributes: [ 'read', 'id' ],
           where: { read }
         }
-      },]
+      }]
   })
   res.json(users)
 })
 
 router.post('/', async (req, res) => {
-    const { username, name, password } = req.body
+  const { username, name, password } = req.body
 
-    console.log(username, name, password)
+  const saltRounds = 10
+  const passwordHash = await bcrypt.hash(password, saltRounds)
 
-    const saltRounds = 10
-    const passwordHash = await bcrypt.hash(password, saltRounds)
-
-    console.log(passwordHash, name, username)
-
-    const user = await User.create({
-        name: name,
-        username: username,
-        passwordHash: passwordHash
-    })
-
-    res.json(user)
+  const user = await User.create({
+    name: name,
+    username: username,
+    passwordHash: passwordHash
   })
 
+  res.json(user)
+})
+
 router.put('/:username', async (req, res) => {
-    console.log(req.body)
-  console.log(req.body.newName)
   const user = await User.findOne({ where: { username: req.params.username } })
-  console.log(user)
+
   if (user) {
     user.name = req.body.newName
     await user.save()
