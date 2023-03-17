@@ -25,6 +25,10 @@ User.init({
   passwordHash: {
     type: DataTypes.STRING,
     allowNull: false
+  },
+  tokenDisabled: {
+    type: DataTypes.BOOLEAN,
+    default: false
   }
 }, {
   sequelize,
